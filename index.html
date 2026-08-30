@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N4 দৈনিক রুটিন ট্র্যাকার</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Serif+JP:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12283a;
+    --paper:#ffffff;
+    --paper-deep:#eaf6fd;
+    --indigo:#1c86c9;
+    --indigo-deep:#115f92;
+    --vermillion:#3fb6ef;
+    --gold:#8fd4f5;
+    --line: rgba(28,134,201,0.16);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% 8%, rgba(63,182,239,0.08), transparent 40%),
+      radial-gradient(circle at 90% 90%, rgba(28,134,201,0.07), transparent 45%),
+      var(--paper);
+    font-family:'Noto Sans Bengali', sans-serif;
+    color:var(--ink);
+    padding:0 0 48px 0;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:22px 18px 0;}
+
+  header{
+    position:relative;
+    padding:26px 22px 22px;
+    background: linear-gradient(155deg, var(--indigo) 0%, var(--indigo-deep) 100%);
+    color:var(--paper);
+    border-radius:18px;
+    overflow:hidden;
+  }
+  header::after{
+    content:"日";
+    position:absolute;
+    right:-14px;
+    top:-30px;
+    font-family:'Noto Serif JP', serif;
+    font-size:150px;
+    color:rgba(255,255,255,0.10);
+    line-height:1;
+  }
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:0.14em;
+    color:var(--gold);
+    text-transform:uppercase;
+    font-family:'Noto Sans Bengali', sans-serif;
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'Shippori Mincho', serif;
+    font-weight:700;
+    font-size:26px;
+    margin:0 0 4px;
+    letter-spacing:0.01em;
+  }
+  .goal-line{
+    margin-top:10px;
+    font-size:12.5px;
+    color:rgba(255,255,255,0.85);
+    background:rgba(255,255,255,0.12);
+    display:inline-block;
+    padding:5px 10px;
+    border-radius:20px;
+  }
+  .datepick{
+    margin-top:16px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:13px;
+  }
+  .datepick input[type=date]{
+    background:rgba(255,255,255,0.14);
+    border:1px solid rgba(255,255,255,0.4);
+    color:var(--paper);
+    border-radius:8px;
+    padding:6px 10px;
+    font-family:'Noto Sans Bengali', sans-serif;
+    font-size:13px;
+  }
+
+  .brush-track{
+    margin-top:18px;
+    height:10px;
+    border-radius:6px;
+    background:rgba(255,255,255,0.18);
+    overflow:hidden;
+    position:relative;
+  }
+  .brush-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, var(--vermillion), var(--indigo));
+    border-radius:6px;
+    transition:width .45s cubic-bezier(.4,0,.2,1);
+  }
+  .progress-label{
+    margin-top:8px;
+    font-size:12.5px;
+    color:rgba(255,255,255,0.8);
+    display:flex;
+    justify-content:space-between;
+  }
+  .progress-label b{color:var(--paper);font-weight:600;}
+
+  .section-title{
+    font-family:'Shippori Mincho', serif;
+    font-weight:700;
+    font-size:15px;
+    color:var(--indigo);
+    margin:28px 4px 10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .section-title .tag{
+    font-size:10.5px;
+    background:var(--indigo);
+    color:var(--paper);
+    padding:2px 8px;
+    border-radius:20px;
+    font-family:'Noto Sans Bengali', sans-serif;
+    font-weight:600;
+    letter-spacing:0.03em;
+  }
+  .section-title.vermil .tag{background:var(--vermillion);}
+
+  .card{
+    background:var(--paper-deep);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:4px;
+    margin-bottom:6px;
+  }
+  .item{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:12px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:background .2s;
+  }
+  .item:active{background:rgba(28,134,201,0.08);}
+  .item.done{opacity:0.55;}
+  .box{
+    flex:0 0 22px;
+    width:22px;height:22px;
+    border-radius:6px;
+    border:2px solid var(--indigo);
+    margin-top:2px;
+    position:relative;
+    transition:background .2s, border-color .2s;
+  }
+  .item.done .box{
+    background:var(--vermillion);
+    border-color:var(--vermillion);
+  }
+  .item.done .box::after{
+    content:"";
+    position:absolute;
+    left:6px;top:2px;
+    width:6px;height:11px;
+    border:solid var(--paper);
+    border-width:0 2.5px 2.5px 0;
+    transform:rotate(40deg);
+  }
+  .item-text{flex:1;}
+  .time{
+    font-size:11.5px;
+    color:var(--vermillion);
+    font-weight:600;
+    letter-spacing:0.02em;
+    display:block;
+    margin-bottom:2px;
+  }
+  .item.done .time{color:#7fa8c2;}
+  .label{
+    font-size:14.5px;
+    font-weight:500;
+    line-height:1.4;
+  }
+  .item.done .label{text-decoration:line-through;text-decoration-color:rgba(18,40,58,0.35);}
+
+  .footer-row{
+    display:flex;
+    gap:10px;
+    margin-top:24px;
+    padding:0 4px;
+  }
+  .reset-btn{
+    flex:1;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--ink);
+    font-family:'Noto Sans Bengali', sans-serif;
+    font-size:13px;
+    font-weight:500;
+    padding:11px;
+    border-radius:10px;
+    cursor:pointer;
+  }
+  .reset-btn:active{background:rgba(28,134,201,0.08);}
+
+  .loading{
+    text-align:center;
+    padding:40px 0;
+    color:rgba(18,40,58,0.5);
+    font-size:13px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">日本語能力試験 · N4 準備</div>
+    <h1>দৈনিক রুটিন ট্র্যাকার</h1>
+    <div class="goal-line">🎯 লক্ষ্য: ৩০ দিনে (১ মাসে) N4 Vocabulary ও Kanji সম্পূর্ণ</div>
+    <div class="datepick">
+      <span id="dateLabel">আজ</span>
+      <input type="date" id="datePicker">
+    </div>
+    <div class="brush-track"><div class="brush-fill" id="brushFill"></div></div>
+    <div class="progress-label">
+      <span>আজকের অগ্রগতি</span>
+      <b id="progressText">0 / 0</b>
+    </div>
+  </header>
+
+  <div id="content" class="loading">লোড হচ্ছে…</div>
+
+  <div class="footer-row">
+    <button class="reset-btn" id="resetBtn">আজকের চেকলিস্ট রিসেট করো</button>
+  </div>
+
+</div>
+
+<script>
+const BASE_ROUTINE = [
+  { section: "সকাল", items: [
+    ["8:00–9:00 AM", "নতুন N4 Vocabulary (৩০টা শব্দ)"],
+    ["9:00–9:30 AM", "গতকালের N4 Vocabulary রিভিশন"],
+    ["9:30–10:00 AM", "বিরতি"],
+  ]},
+  { section: "দুপুর", items: [
+    ["10:00–11:00 AM", "নতুন Kanji (১০টা)"],
+    ["11:00–11:30 AM", "Kanji লেখার প্র্যাকটিস"],
+    ["12:00–1:30 PM", "লাঞ্চ + রেস্ট"],
+    ["2:00–2:30 PM", "Power Nap"],
+  ]},
+  { section: "বিকেল", items: [
+    ["3:00–4:00 PM", "N4 Vocabulary প্র্যাকটিস (flashcard/quiz)"],
+    ["4:00–4:30 PM", "বিরতি"],
+    ["4:30–5:30 PM", "পুরনো Kanji রিভিশন"],
+  ]},
+  { section: "সন্ধ্যা/রাত", items: [
+    ["8:00–9:00 PM", "নতুন N4 Vocabulary (১৫-২০টা)"],
+    ["9:00–10:00 PM", "মিলিয়ে Quiz / Self-test"],
+    ["10:00–10:30 PM", "ডিনার"],
+    ["11:00–11:30 PM", "হালকা রিভিশন (চোখ বুলানো)"],
+  ]},
+];
+
+// dow: 0=রবি, 1=সোম, 2=মঙ্গল, 3=বুধ, 4=বৃহস্পতি, 5=শুক্র, 6=শনি
+function getRoutineForDay(dow){
+  const routine = BASE_ROUTINE.map(sec => ({ section: sec.section, items: sec.items.map(it => it.slice()) }));
+
+  if(dow === 2 || dow === 5){
+    // মঙ্গল ও শুক্র: বিকেলের Kanji রিভিশন স্লটে N5 রিভিশন চেকলিস্ট আইটেম
+    const bikel = routine.find(s => s.section === "বিকেল");
+    bikel.items[2] = ["4:30–5:30 PM", "N5 Vocabulary + Grammar রিভিশন"];
+  }
+
+  if(dow === 0){
+    // রবিবার: একই স্লটে N5 ফুল রিভিশন
+    const bikel = routine.find(s => s.section === "বিকেল");
+    bikel.items[2] = ["4:30–5:30 PM", "N5 Grammar/Vocabulary পুরো সপ্তাহ ঝালাই"];
+  }
+
+  return routine;
+}
+
+function todayISO(){
+  const d = new Date();
+  const off = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - off*60000);
+  return local.toISOString().slice(0,10);
+}
+
+function flatKeys(routine){
+  const keys = [];
+  routine.forEach((sec, si) => sec.items.forEach((it, ii) => keys.push(si+"-"+ii)));
+  return keys;
+}
+
+let currentDate = todayISO();
+let state = {};
+let currentRoutine = getRoutineForDay(new Date(currentDate + "T00:00:00").getDay());
+
+async function loadState(dateStr){
+  const key = "n4tracker:" + dateStr;
+  if(typeof window.storage === 'undefined') return {};
+  try{
+    const res = await window.storage.get(key, false);
+    return res ? JSON.parse(res.value) : {};
+  }catch(e){
+    return {};
+  }
+}
+
+async function saveState(dateStr, st){
+  const key = "n4tracker:" + dateStr;
+  if(typeof window.storage === 'undefined') return;
+  try{
+    const result = await window.storage.set(key, JSON.stringify(st), false);
+    if(!result){
+      console.error('Storage operation failed');
+    }
+  }catch(e){
+    console.error("save failed", e);
+  }
+}
+
+function dayLabel(dateStr){
+  const d = new Date(dateStr + "T00:00:00");
+  const bnDays = ["রবিবার","সোমবার","মঙ্গলবার","বুধবার","বৃহস্পতিবার","শুক্রবার","শনিবার"];
+  const bnMonths = ["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
+  return bnDays[d.getDay()] + ", " + d.getDate() + " " + bnMonths[d.getMonth()];
+}
+
+function render(){
+  const content = document.getElementById('content');
+  content.className = "";
+  content.innerHTML = "";
+
+  const totalKeys = flatKeys(currentRoutine);
+  let doneCount = 0;
+
+  currentRoutine.forEach((sec, si) => {
+    const title = document.createElement('div');
+    title.className = "section-title" + (si % 2 === 1 ? " vermil" : "");
+    title.innerHTML = `${sec.section} <span class="tag">${sec.items.length} টাস্ক</span>`;
+    content.appendChild(title);
+
+    const card = document.createElement('div');
+    card.className = "card";
+
+    sec.items.forEach((it, ii) => {
+      const key = si + "-" + ii;
+      const isDone = !!state[key];
+      if(isDone) doneCount++;
+
+      const row = document.createElement('div');
+      row.className = "item" + (isDone ? " done" : "");
+      row.innerHTML = `
+        <div class="box"></div>
+        <div class="item-text">
+          <span class="time">${it[0]}</span>
+          <span class="label">${it[1]}</span>
+        </div>`;
+      row.addEventListener('click', () => toggle(key));
+      card.appendChild(row);
+    });
+
+    content.appendChild(card);
+  });
+
+  const pct = totalKeys.length ? Math.round((doneCount/totalKeys.length)*100) : 0;
+  document.getElementById('brushFill').style.width = pct + "%";
+  document.getElementById('progressText').textContent = `${doneCount} / ${totalKeys.length}`;
+  document.getElementById('dateLabel').textContent = dayLabel(currentDate);
+}
+
+async function toggle(key){
+  state[key] = !state[key];
+  render();
+  await saveState(currentDate, state);
+}
+
+async function switchDate(dateStr){
+  currentDate = dateStr;
+  currentRoutine = getRoutineForDay(new Date(currentDate + "T00:00:00").getDay());
+  document.getElementById('content').className = "loading";
+  document.getElementById('content').textContent = "লোড হচ্ছে…";
+  state = await loadState(dateStr);
+  render();
+}
+
+document.getElementById('datePicker').addEventListener('change', (e) => {
+  if(e.target.value) switchDate(e.target.value);
+});
+
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  state = {};
+  render();
+  await saveState(currentDate, state);
+});
+
+(async function init(){
+  document.getElementById('datePicker').value = currentDate;
+  state = await loadState(currentDate);
+  render();
+})();
+</script>
+</body>
+</html>
